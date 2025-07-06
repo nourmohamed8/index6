@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title> API</title>
+    <style>
+        body {
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            background: #f2f2f2;
+            padding: 30px;
+        }
+
+        form {
+            background: #fff;
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .post-container {
+            background: #fff;
+            padding: 20px;
+            max-width: 800px;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid blueviolet;
+        }
+
+        .posts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .post {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-left: 3px solid blueviolet ;
+        }
+
+        input,
+        button {
+            display: block;
+            width: 95%;
+            margin-bottom: 15px;
+            padding: 10px;
+            font-size: 13px;
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        button {
+            background-color: blueviolet;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background-color 0.5s;
+        }
+
+        button:hover {
+            background-color: rgb(62, 19, 103);
+        }
+
+        .view-all-btn {
+            background-color: rgb(213, 215, 237);
+        }
+
+        .view-all-btn:hover {
+            background-color: blueviolet;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: blueviolet;
+            margin-top: auto;
+        }
+        h2{
+            text-align: center;
+            color: blueviolet;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+    </style>
+    <h2>Submit a Post</h2>
+</head>
+
+<body>
+    <form id="contactForm">
+        <input type="text" id="title" placeholder="Enter your title" required />
+        <input type="text" id="content" placeholder="Enter your content" required />
+        <button type="submit">Send</button>
+        <div class="message" id="formMessage"></div>
+        <button type="button" onclick="viewall()" class="view-all-btn">
+            View All Posts
+        </button>
+    </form>
+    <div id="singlePost" class="post-container" style="display:none;"></div>
+    <div id="allPosts" class="post-container" style="display:none;">
+        <h2 style="text-align: center;">All Posts</h2>
+        <div class="posts-list" id="postsList"></div>
+    </div>
+
+    <script>
+        function viewall() {
+            document.getElementById('allPosts').style.display = 'block';
+            document.getElementById('singlePost').style.display = 'none';
+            
+            fetch("https://jsonplaceholder.typicode.com/posts")
+                .then(response => response.json())
+                .then(data => {
+                    const postsList = document.getElementById('postsList');
+                    postsList.innerHTML = ''; 
+                    
+                    
+                    const postsToShow = data;
+                    
+                    postsToShow.forEach(post => {
+                        const postElement = document.createElement("div");
+                        postElement.className = "post";
+                        postElement.innerHTML = `
+                            <h3>${post.title}</h3>
+                            <p>${post.body}</p>
+                            <small>Post ID: ${post.id}</small>
+                        `;
+                        postsList.appendChild(postElement);
+                    });
+                })
+                .catch(error => {
+                    document.getElementById("formMessage").textContent = "Error loading posts.";
+                });
+        }
+
+        document.getElementById("contactForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+         
+            var data = {
+                title: document.getElementById("title").value,
+                body: document.getElementById("content").value,
+                userId: 1 
+            };
+
+            fetch("https://jsonplaceholder.typicode.com/posts", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    document.getElementById("formMessage").textContent = "Message sent successfully!";
+                    document.getElementById("singlePost").style.display = "block";
+                    document.getElementById("allPosts").style.display = "none";
+                    document.getElementById("singlePost").innerHTML = `
+                        <h2>Your New Post</h2>
+                        <h3>${result.title}</h3>
+                        <p>${result.body}</p>
+                        <small>Post ID: ${result.id}</small>
+                    `;
+                    
+                    // Clear the form
+                    document.getElementById("contactForm").reset();
+                })
+                .catch(error => {
+                    document.getElementById("formMessage").textContent = "Error sending message.";
+                });
+        });
+    </script>
+</body>
+</html
